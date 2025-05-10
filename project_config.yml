@@ -14,8 +14,7 @@ parameters:
   max_depth: 6
 
 
-id_cols:
- - Booking_ID
+id_cols: Booking_ID
 
 num_features:
   - no_of_adults

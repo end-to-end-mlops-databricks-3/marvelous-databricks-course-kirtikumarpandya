@@ -19,9 +19,11 @@ class ProjectConfig(BaseModel):
     catalog_name: str
     schema_name: str
     parameters: dict[str, Any]
+    id_cols: str
+    date_features: list[str]
 
     @classmethod
-    def from_yaml(cls, config_path: str, env: str = "dev") -> "ProjectConfig":
+    def from_yaml(cls, config_path: str | None = None, env: str = "dev") -> "ProjectConfig":
         """Load and parse configuration settings from a YAML file.
 
         :param config_path: Path to the YAML configuration file

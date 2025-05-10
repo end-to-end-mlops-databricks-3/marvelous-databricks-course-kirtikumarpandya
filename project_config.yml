@@ -1,12 +1,12 @@
 prd:
   catalog_name: mlops_prd
-  schema_name: hotel_reservations
+  schema_name: 1potdish
 acc:
   catalog_name: mlops_acc
-  schema_name: hotel_reservations
+  schema_name: 1potdish
 dev:
   catalog_name: mlops_dev
-  schema_name: hotel_reservations
+  schema_name: 1potdish
 
 parameters:
   learning_rate: 0.01
@@ -14,36 +14,30 @@ parameters:
   max_depth: 6
 
 
+id_cols:
+ - Booking_ID
+
 num_features:
-  - LotFrontage
-  - LotArea
-  - OverallQual
-  - OverallCond
-  - YearBuilt
-  - YearRemodAdd
-  - MasVnrArea
-  - TotalBsmtSF
-  - GrLivArea
-  - GarageCars
+  - no_of_adults
+  - no_of_children
+  - no_of_weekend_nights
+  - no_of_week_nights
+  - lead_time
+  - repeated_guest
+  - no_of_previous_cancellations
+  - no_of_previous_bookings_not_canceled
+  - avg_price_per_room
+  - no_of_special_requests
+
+date_features:
+  - arrival_date
+  - arrival_year
+  - arrival_month
 
 cat_features:
-  - MSZoning
-  - Street
-  - Alley
-  - LotShape
-  - LandContour
-  - Neighborhood
-  - Condition1
-  - BldgType
-  - HouseStyle
-  - RoofStyle
-  - Exterior1st
-  - Exterior2nd
-  - MasVnrType
-  - Foundation
-  - Heating
-  - CentralAir
-  - SaleType
-  - SaleCondition
+  - type_of_meal_plan
+  - required_car_parking_space
+  - room_type_reserved
+  - market_segment_type
 
-target: SalePrice
+target: booking_status

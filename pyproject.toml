@@ -20,6 +20,7 @@ dependencies = [
     "pydantic==2.9.2",
     "loguru==0.7.3",
     "marvelous@git+https://github.com/end-to-end-mlops-databricks-3/marvelous@0.1.0",
+    "xgboost>=3.0.0",
 ]
 
 dynamic = ['version']

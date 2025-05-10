@@ -1,4 +1,4 @@
-"""House price package."""
+"""Hotel reservations package."""
 
 import importlib.metadata
 import importlib.resources

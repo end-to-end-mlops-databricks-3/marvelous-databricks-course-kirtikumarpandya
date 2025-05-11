@@ -19,7 +19,7 @@ class ProjectConfig(BaseModel):
     catalog_name: str
     schema_name: str
     parameters: dict[str, Any]
-    id_cols: str
+    id_cols: list[str]
     date_features: list[str]
 
     @classmethod

@@ -76,7 +76,9 @@ class DataProcessor:
         for col in num_features:
             pandas_df[col] = pd.to_numeric(pandas_df[col], errors="coerce")
 
-        self.pandas_df = pandas_df
+        self.pandas_df = pandas_df[
+            self.config.num_features + self.config.cat_features + self.config.id_cols + [self.config.target]
+        ]
 
     def split_data(self, test_size: float = 0.2, random_state: int = 42) -> tuple[pd.DataFrame, pd.DataFrame]:
         """Split the DataFrame (self.df) into training and test sets.
@@ -124,6 +126,6 @@ class DataProcessor:
         )
 
         self.spark.sql(
-            f"ALTER TABLE {self.config.catalog_name}.{self.config.schema_name}.test_set_hotel_reservations"
-            "SET TBLPROPERTIES (delta.enableChangeDataFeed = true);"
+            f"ALTER TABLE {self.config.catalog_name}.{self.config.schema_name}.test_set_hotel_reservations "
+            " SET TBLPROPERTIES (delta.enableChangeDataFeed = true);"
         )

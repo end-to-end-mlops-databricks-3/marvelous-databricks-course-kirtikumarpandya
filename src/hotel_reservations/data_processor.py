@@ -36,10 +36,12 @@ class DataProcessor:
         pandas_df = self.pandas_df
 
         # drop duplicates and null values
-        pandas_df = pandas_df.drop_duplicates().dropna(how="all")
+        pandas_df = pandas_df.drop_duplicates()
+        pandas_df = pandas_df.dropna(how="all")
 
         # drop target column with None values and reset index
-        pandas_df = pandas_df.dropna(subset=[self.config.target]).reset_index(drop=True)
+        pandas_df = pandas_df.dropna(subset=[self.config.target])
+        pandas_df = pandas_df.reset_index(drop=True)
 
         # Converting id columns to string
         id_cols = self.config.id_cols
@@ -62,13 +64,19 @@ class DataProcessor:
             + "-"
             + pandas_df["arrival_month"].astype(str).str.zfill(2)
             + "-"
-            + pandas_df["arrival_date"].astype(str).str.zfill(2)
+            + pandas_df["arrival_date"].astype(str).str.zfill(2),
+            dayfirst=False,
+            format="%Y-%m-%d",
+            errors="coerce",
         )
+        pandas_df = pandas_df.dropna(subset=["date"]).reset_index(drop=True)
 
         # Handle numeric features
         num_features = self.config.num_features
         for col in num_features:
-            self.df[col] = pd.to_numeric(self.df[col], errors="coerce")
+            pandas_df[col] = pd.to_numeric(pandas_df[col], errors="coerce")
+
+        self.pandas_df = pandas_df
 
     def split_data(self, test_size: float = 0.2, random_state: int = 42) -> tuple[pd.DataFrame, pd.DataFrame]:
         """Split the DataFrame (self.df) into training and test sets.
@@ -77,7 +85,7 @@ class DataProcessor:
         :param random_state: Controls the shuffling applied to the data before applying the split.
         :return: A tuple containing the training and test DataFrames.
         """
-        train_set, test_set = train_test_split(self.df, test_size=test_size, random_state=random_state)
+        train_set, test_set = train_test_split(self.pandas_df, test_size=test_size, random_state=random_state)
         return train_set, test_set
 
     def save_to_catalog(self, train_set: pd.DataFrame, test_set: pd.DataFrame) -> None:

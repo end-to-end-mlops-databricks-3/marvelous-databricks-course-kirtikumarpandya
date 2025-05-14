@@ -2,7 +2,7 @@ version: '3'
 dotenv: [.env]
 
 vars:
-  PACKAGE_IMPORT_NAME: mlops_course
+  PACKAGE_IMPORT_NAME: hotel_reservations
   PYTHON_VERSION: 3.11
 
 tasks:
@@ -33,7 +33,16 @@ tasks:
       - uv run pre-commit run --all-files
 
   run-unit-tests:
-    desc: Run pytests
+    cmds:
+      - export PYTEST_EXIT_STATUS=0
+      - rm -rf test-reports || true
+      - uv run pytest -m "not ci_exclude" ./tests --cov "{{.TASKFILE_DIR}}/src/{{.PACKAGE_IMPORT_NAME}}" --cov-report html --cov-report term  --cov-report xml --junit-xml "{{.TASKFILE_DIR}}/test-reports/report.xml" --cov-fail-under 60 || ((PYTEST_EXIT_STATUS+=$?))
+      - mv coverage.xml "{{.TASKFILE_DIR}}/test-reports/" || true
+      - mv htmlcov "{{.TASKFILE_DIR}}/test-reports/" && rm -rf htmlcov
+      - mv .coverage "{{.TASKFILE_DIR}}/test-reports/" || true
+      - exit $PYTEST_EXIT_STATUS
+    silent: true
+    desc: "Run tests with coverage reports and move results to test-reports directory"
 
   help:
     desc: Print all tasks defined in the Taskfile

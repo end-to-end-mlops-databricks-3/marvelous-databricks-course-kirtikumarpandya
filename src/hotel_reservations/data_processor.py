@@ -25,7 +25,7 @@ class DataProcessor:
         self.pandas_df = pandas_df
         self.spark = spark
 
-    def process(self) -> None:
+    def preprocess(self) -> None:
         """Process the data by loading, transforming, and saving it.
 
         This method performs the following steps:

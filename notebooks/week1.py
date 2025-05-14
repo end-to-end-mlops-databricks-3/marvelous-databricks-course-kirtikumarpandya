@@ -44,7 +44,7 @@ with Timer() as preprocess_timer:
     data_processor = DataProcessor(config=config, pandas_df=df, spark=spark)
 
     # Preprocess the data
-    data_processor.process()
+    data_processor.preprocess()
 
 logger.info(f"Data preprocessing: {preprocess_timer}")
 # COMMAND ----------

@@ -32,6 +32,9 @@ tasks:
     cmds:
       - uv run pre-commit run --all-files
 
+  run-unit-tests:
+    desc: Run pytests
+
   help:
     desc: Print all tasks defined in the Taskfile
     cmd: task -l

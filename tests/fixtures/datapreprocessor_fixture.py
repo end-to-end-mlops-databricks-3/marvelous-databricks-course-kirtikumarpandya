@@ -72,3 +72,26 @@ def tags() -> Tags:
     This fixture provides a Tags object with predefined values for git_sha, branch, and job_run_id.
     """
     return Tags(git_sha="wxyz", branch="test", job_run_id="9")
+
+
+@pytest.fixture
+def spark_df_with_special_chars(spark_session: SparkSession) -> SparkSession:
+    """Create a Spark DataFrame with column names containing special characters.
+
+    :param spark_session: SparkSession fixture
+    :return: Spark DataFrame with column names containing special characters
+    """
+    # Create a simple dataframe with columns containing special characters
+    data = [("value1", "value2", "value3", "value4", "value5", "value6", "value7", "value8")]
+    columns = [
+        "column with space",
+        "column(with)parentheses",
+        "column{with}braces",
+        "column,with,commas",
+        "column;with;semicolons",
+        "column=with=equals",
+        "mixed column(with){all},special;chars=together",
+        "normal_column",
+    ]
+
+    return spark_session.createDataFrame(data, columns)

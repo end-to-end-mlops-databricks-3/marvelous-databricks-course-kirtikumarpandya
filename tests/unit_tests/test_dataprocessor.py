@@ -8,6 +8,7 @@ from pyspark.sql import SparkSession
 
 from hotel_reservations.config import ProjectConfig
 from hotel_reservations.data_processor import DataProcessor
+from hotel_reservations.helper import rename_spark_df_column_name
 
 
 def test_data_ingestion(sample_data: pd.DataFrame) -> None:
@@ -158,3 +159,36 @@ def test_delta_table_property_of_enableChangeDataFeed_check(config: ProjectConfi
         properties = delta_table.detail().select("properties").collect()[0][0]
         cdf_enabled = properties.get("delta.enableChangeDataFeed")
         assert bool(cdf_enabled) is True
+
+
+def test_rename_spark_df_column_name(spark_df_with_special_chars: SparkSession) -> None:
+    """Test that rename_spark_df_column_name correctly replaces special characters in column names.
+
+    :param spark_df_with_special_chars: Spark DataFrame with special character column names
+    """
+    # Apply the function to rename columns
+    renamed_df = rename_spark_df_column_name(spark_df_with_special_chars)
+
+    # Get the new column names
+    new_columns = renamed_df.columns
+
+    # Check each column name was transformed correctly
+    assert "column_with_space" in new_columns
+    assert "column[with]parentheses" in new_columns
+    assert "column[with]braces" in new_columns
+    assert "column_with_commas" in new_columns
+    assert "column_with_semicolons" in new_columns
+    assert "column_with_equals" in new_columns
+    assert "mixed_column[with][all]_special_chars_together" in new_columns
+    assert "normal_column" in new_columns  # This should remain unchanged
+
+    # Verify that no original special characters remain in any column name
+    for col in new_columns:
+        assert " " not in col, f"Space found in column name: {col}"
+        assert "(" not in col, f"Opening parenthesis found in column name: {col}"
+        assert ")" not in col, f"Closing parenthesis found in column name: {col}"
+        assert "{" not in col, f"Opening brace found in column name: {col}"
+        assert "}" not in col, f"Closing brace found in column name: {col}"
+        assert "," not in col, f"Comma found in column name: {col}"
+        assert ";" not in col, f"Semicolon found in column name: {col}"
+        assert "=" not in col, f"Equal sign found in column name: {col}"

@@ -101,7 +101,8 @@ class BasicModel:
         param_combinations = list(ParameterGrid(pipeline_param_grid))
         logger.info(f"🚀 Starting hyperparameter tuning with {len(param_combinations)} combinations...")
 
-        with mlflow.start_run(tags=self.tags):
+        with mlflow.start_run(tags=self.tags) as parent_run:
+            self.run_id = parent_run.info.run_id
             for i, params in enumerate(param_combinations):
                 # Create child run for each parameter combination
                 with mlflow.start_run(run_name=f"run_{i + 1}", nested=True) as child_run:
@@ -137,12 +138,6 @@ class BasicModel:
                         mlflow.log_metric("mae", mae)
                         mlflow.log_metric("r2_score", r2)
 
-                        # Log model
-                        signature = infer_signature(model_input=self.X_train, model_output=y_pred)
-                        mlflow.sklearn.log_model(
-                            sk_model=current_pipeline, artifact_path="lightgbm-pipeline-model", signature=signature
-                        )
-
                         logger.info(f"📊 Run {i + 1}/{len(param_combinations)} - R2: {r2:.4f}, MSE: {mse:.4f}")
 
                         # Track best model
@@ -169,45 +164,16 @@ class BasicModel:
             self.best_params = best_params
             self.best_score = best_score
 
-    def train(self) -> None:
-        """Train the model."""
-        logger.info("🚀 Starting training...")
-        self.pipeline.fit(self.X_train, self.y_train)
-
-    def log_model(self) -> None:
-        """Log the model using MLflow."""
-        mlflow.set_experiment(self.experiment_name)
-        with mlflow.start_run(tags=self.tags) as run:
-            self.run_id = run.info.run_id
-
-            y_pred = self.pipeline.predict(self.X_test)
-
-            # Evaluate metrics
-            mse = mean_squared_error(self.y_test, y_pred)
-            mae = mean_absolute_error(self.y_test, y_pred)
-            r2 = r2_score(self.y_test, y_pred)
-
-            logger.info(f"📊 Mean Squared Error: {mse}")
-            logger.info(f"📊 Mean Absolute Error: {mae}")
-            logger.info(f"📊 R2 Score: {r2}")
-
-            # Log parameters and metrics
-            mlflow.log_param("model_type", "LightGBM with preprocessing")
-            mlflow.log_params(self.parameters)
-            mlflow.log_metric("mse", mse)
-            mlflow.log_metric("mae", mae)
-            mlflow.log_metric("r2_score", r2)
-
-            # Log the model
+            # Log model
             signature = infer_signature(model_input=self.X_train, model_output=y_pred)
             dataset = mlflow.data.from_spark(
                 self.train_set_spark,
-                table_name=f"{self.catalog_name}.{self.schema_name}.train_set",
+                table_name=f"{self.catalog_name}.{self.schema_name}.train_set_hotel_reservations",
                 version=self.data_version,
             )
             mlflow.log_input(dataset, context="training")
             mlflow.sklearn.log_model(
-                sk_model=self.pipeline, artifact_path="lightgbm-pipeline-model", signature=signature
+                sk_model=current_pipeline, artifact_path="lightgbm-pipeline-model", signature=signature
             )
 
     def register_model(self) -> None:

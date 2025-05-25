@@ -1,7 +1,5 @@
 """Configuration file for the project."""
 
-from typing import Any
-
 import yaml
 from pydantic import BaseModel
 
@@ -18,7 +16,7 @@ class ProjectConfig(BaseModel):
     target: str
     catalog_name: str
     schema_name: str
-    parameters: dict[str, Any]
+    parameters: dict[str, list[int | float]]
     id_cols: list[str]
     date_features: list[str]
 

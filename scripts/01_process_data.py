@@ -23,7 +23,6 @@ setup_logging(log_file=f"/Volumes/{config.catalog_name}/{config.schema_name}/log
 logger.info("Configuration loaded:")
 logger.info(yaml.dump(config, default_flow_style=False))
 
-
 # Load the house prices dataset
 spark = SparkSession.builder.getOrCreate()
 df = spark.read.csv(

@@ -138,8 +138,8 @@ def test_save_to_catalog_succesfull(
     processor.enable_change_data_feed()
 
     # Assert
-    assert spark_session.catalog.tableExists(f"{config.catalog_name}.{config.schema_name}.train_set")
-    assert spark_session.catalog.tableExists(f"{config.catalog_name}.{config.schema_name}.test_set")
+    assert spark_session.catalog.tableExists(f"{config.catalog_name}.{config.schema_name}.train_set_hotel_reservations")
+    assert spark_session.catalog.tableExists(f"{config.catalog_name}.{config.schema_name}.test_set_hotel_reservations")
 
 
 @pytest.mark.skip(reason="depends on delta tables on Databrics")
@@ -153,14 +153,31 @@ def test_delta_table_property_of_enableChangeDataFeed_check(config: ProjectConfi
     :param config: Project configuration object
     :param spark: SparkSession object
     """
-    train_set_path = f"{config.catalog_name}.{config.schema_name}.train_set"
-    test_set_path = f"{config.catalog_name}.{config.schema_name}.test_set"
+    train_set_path = f"{config.catalog_name}.{config.schema_name}.train_set_hotel_reservations"
+    test_set_path = f"{config.catalog_name}.{config.schema_name}.test_set_hotel_reservations"
     tables = [train_set_path, test_set_path]
     for table in tables:
         delta_table = DeltaTable.forName(spark_session, table)
         properties = delta_table.detail().select("properties").collect()[0][0]
         cdf_enabled = properties.get("delta.enableChangeDataFeed")
         assert bool(cdf_enabled) is True
+
+
+@pytest.mark.skip(reason="depends on delta tables on Databricks")
+@pytest.mark.order(after=test_delta_table_property_of_enableChangeDataFeed_check)
+def test_set_primary_and_foreign_keys(config: ProjectConfig, spark_session: SparkSession) -> None:
+    """Test the primary and foreign key settings of the DataProcessor.
+
+    This function tests if the primary and foreign keys are correctly set for the train and test sets.
+
+    :param config: Configuration object for the project
+    :param spark: SparkSession object
+    """
+    processor = DataProcessor(pandas_df=pd.DataFrame([]), config=config, spark=spark_session)
+    processor.set_primary_and_foreign_keys()
+
+    assert spark_session.catalog.tableExists(f"{config.catalog_name}.{config.schema_name}.train_set_hotel_reservations")
+    assert spark_session.catalog.tableExists(f"{config.catalog_name}.{config.schema_name}.test_set_hotel_reservations")
 
 
 def test_rename_spark_df_column_name(spark_df_with_special_chars: SparkSession) -> None:

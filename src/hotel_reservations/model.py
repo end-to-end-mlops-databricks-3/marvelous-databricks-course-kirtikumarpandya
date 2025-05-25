@@ -45,8 +45,8 @@ class BasicModel:
         self.parameters = self.config.parameters
         self.catalog_name = self.config.catalog_name
         self.schema_name = self.config.schema_name
-        self.experiment_name = self.config.experiment_name_basic
-        self.model_name = f"{self.catalog_name}.{self.schema_name}.house_prices_model_basic"
+        self.experiment_name = self.config.experiment_name
+        self.model_name = f"{self.catalog_name}.{self.schema_name}.hotel_reservations_model"
         self.tags = tags.dict()
 
     def load_data(self) -> None:
@@ -55,9 +55,11 @@ class BasicModel:
         Splits data into features (X_train, X_test) and target (y_train, y_test).
         """
         logger.info("🔄 Loading data from Databricks tables...")
-        self.train_set_spark = self.spark.table(f"{self.catalog_name}.{self.schema_name}.train_set")
+        self.train_set_spark = self.spark.table(f"{self.catalog_name}.{self.schema_name}.train_set_hotel_reservations")
         self.train_set = self.train_set_spark.toPandas()
-        self.test_set = self.spark.table(f"{self.catalog_name}.{self.schema_name}.test_set").toPandas()
+        self.test_set = self.spark.table(
+            f"{self.catalog_name}.{self.schema_name}.test_set_hotel_reservations"
+        ).toPandas()
         self.data_version = "0"  # describe history -> retrieve
 
         self.X_train = self.train_set[self.num_features + self.cat_features]
@@ -141,7 +143,7 @@ class BasicModel:
                         logger.info(f"📊 Run {i + 1}/{len(param_combinations)} - R2: {r2:.4f}, MSE: {mse:.4f}")
 
                         # Track best model
-                        if r2 > best_score:  # Using R2 as the metric to maximize
+                        if r2 < best_score:  # Using R2 as the metric to minimize
                             best_score = r2
                             best_params = original_params
                             best_run_id = child_run.info.run_id

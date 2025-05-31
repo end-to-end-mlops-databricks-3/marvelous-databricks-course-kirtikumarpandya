@@ -777,7 +777,7 @@ wheels = [
 ]
 
 [[package]]
-name = "house-price"
+name = "hotel-reservations"
 source = { editable = "." }
 dependencies = [
     { name = "cffi" },

@@ -1,5 +1,5 @@
 [project]
-name = "house-price"
+name = "hotel-reservations"
 description = "Housing prices project"
 requires-python = ">=3.11, <3.12"
 dependencies = [

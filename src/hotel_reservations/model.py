@@ -143,7 +143,7 @@ class BasicModel:
                         logger.info(f"📊 Run {i + 1}/{len(param_combinations)} - R2: {r2:.4f}, MSE: {mse:.4f}")
 
                         # Track best model
-                        if r2 < best_score:  # Using R2 as the metric to minimize
+                        if r2 > best_score:  # Using R2 as the metric to minimize
                             best_score = r2
                             best_params = original_params
                             best_run_id = child_run.info.run_id

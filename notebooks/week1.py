@@ -53,11 +53,16 @@ X_train, X_test = data_processor.split_data()
 logger.info("Training set shape: %s", X_train.shape)
 logger.info("Test set shape: %s", X_test.shape)
 # COMMAND ----------
+X_train.head()
+# COMMAND ----------
 # Save to catalog
 logger.info("Saving data to catalog")
 data_processor.save_to_catalog(X_train, X_test)
 
 # Enable change data feed (only once!)
-logger.info("Enable change data feed")
-data_processor.enable_change_data_feed()
+# logger.info("Enable change data feed")
+# data_processor.enable_change_data_feed()
+# COMMAND ----------
+logger.info("Setting primary and foreign keys")
+data_processor.set_primary_and_foreign_keys()
 # COMMAND ----------

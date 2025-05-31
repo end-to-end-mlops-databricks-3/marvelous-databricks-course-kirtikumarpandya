@@ -42,6 +42,9 @@ class DataProcessor:
         # drop target column with None values and reset index
         pandas_df = pandas_df.dropna(subset=[self.config.target])
         pandas_df = pandas_df.reset_index(drop=True)
+        pandas_df[self.config.target] = pandas_df[self.config.target].apply(
+            lambda x: 1 if str(x).lower() == "canceled" else 0
+        )
 
         # Converting id columns to string
         id_cols = self.config.id_cols
@@ -77,7 +80,12 @@ class DataProcessor:
             pandas_df[col] = pd.to_numeric(pandas_df[col], errors="coerce")
 
         self.pandas_df = pandas_df[
-            self.config.num_features + self.config.cat_features + self.config.id_cols + [self.config.target]
+            self.config.num_features
+            + self.config.cat_features
+            + self.config.id_cols
+            + [self.config.target]
+            + ["date"]
+            + self.config.date_features
         ]
 
     def split_data(self, test_size: float = 0.2, random_state: int = 42) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -107,11 +115,11 @@ class DataProcessor:
         train_set_with_timestamp = rename_spark_df_column_name(train_set_with_timestamp)
         test_set_with_timestamp = rename_spark_df_column_name(test_set_with_timestamp)
 
-        train_set_with_timestamp.write.mode("overwrite").saveAsTable(
+        train_set_with_timestamp.write.mode("overwrite").option("mergeSchema", "true").saveAsTable(
             f"{self.config.catalog_name}.{self.config.schema_name}.train_set_hotel_reservations"
         )
 
-        test_set_with_timestamp.write.mode("overwrite").saveAsTable(
+        test_set_with_timestamp.write.mode("overwrite").option("mergeSchema", "true").saveAsTable(
             f"{self.config.catalog_name}.{self.config.schema_name}.test_set_hotel_reservations"
         )
 
@@ -121,7 +129,7 @@ class DataProcessor:
         This method alters the tables to enable Change Data Feed functionality.
         """
         self.spark.sql(
-            f"ALTER TABLE {self.config.catalog_name}.{self.config.schema_name}.train_set_hotel_reservations"
+            f"ALTER TABLE {self.config.catalog_name}.{self.config.schema_name}.train_set_hotel_reservations "
             "SET TBLPROPERTIES (delta.enableChangeDataFeed = true);"
         )
 
@@ -129,3 +137,61 @@ class DataProcessor:
             f"ALTER TABLE {self.config.catalog_name}.{self.config.schema_name}.test_set_hotel_reservations "
             " SET TBLPROPERTIES (delta.enableChangeDataFeed = true);"
         )
+
+    def set_primary_and_foreign_keys(self) -> None:
+        """Set primary and foreign keys for the train and test set tables.
+
+        This method alters the tables to set primary and foreign keys.
+        """
+        catalog_name = self.config.catalog_name
+        schema_name = self.config.schema_name
+
+        self.spark.sql(f"""
+        ALTER TABLE {catalog_name}.`{schema_name}`.train_set_hotel_reservations
+                        ALTER COLUMN Booking_ID SET NOT NULL;
+        """)
+
+        self.spark.sql(f"""
+        ALTER TABLE {catalog_name}.`{schema_name}`.test_set_hotel_reservations
+                        ALTER COLUMN Booking_ID SET NOT NULL;
+        """)
+
+        self.spark.sql(f"""
+                        ALTER TABLE {catalog_name}.`{schema_name}`.train_set_hotel_reservations
+                        DROP CONSTRAINT IF EXISTS pk_train_booking_id;
+                       """)
+
+        self.spark.sql(f"""
+                        ALTER TABLE {catalog_name}.`{schema_name}`.train_set_hotel_reservations
+                        DROP CONSTRAINT IF EXISTS pk_fk_train_set;
+                       """)
+
+        self.spark.sql(f"""
+                       ALTER TABLE {catalog_name}.`{schema_name}`.train_set_hotel_reservations
+                        ADD CONSTRAINT pk_train_booking_id PRIMARY KEY (Booking_ID);
+                       """)
+
+        self.spark.sql(f"""
+                        ALTER TABLE {catalog_name}.`{schema_name}`.train_set_hotel_reservations
+                        ADD CONSTRAINT pk_fk_train_set FOREIGN KEY (booking_status) REFERENCES {catalog_name}.`{schema_name}`.target_mapping_hotel_reservations(value);
+                       """)
+
+        self.spark.sql(f"""
+                        ALTER TABLE {catalog_name}.`{schema_name}`.test_set_hotel_reservations
+                        DROP CONSTRAINT IF EXISTS pk_test_booking_id;
+                       """)
+
+        self.spark.sql(f"""
+                        ALTER TABLE {catalog_name}.`{schema_name}`.test_set_hotel_reservations
+                        DROP CONSTRAINT IF EXISTS pk_fk_test_set;
+        """)
+
+        self.spark.sql(f"""
+                       ALTER TABLE {catalog_name}.`{schema_name}`.test_set_hotel_reservations
+                        ADD CONSTRAINT pk_test_booking_id PRIMARY KEY (Booking_ID);
+                       """)
+
+        self.spark.sql(f"""
+                        ALTER TABLE {catalog_name}.`{schema_name}`.test_set_hotel_reservations
+                        ADD CONSTRAINT pk_fk_test_set FOREIGN KEY (booking_status) REFERENCES {catalog_name}.`{schema_name}`.target_mapping_hotel_reservations(value);
+                       """)

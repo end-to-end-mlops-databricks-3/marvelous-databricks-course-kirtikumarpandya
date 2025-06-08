@@ -41,6 +41,7 @@ class BasicModel:
         # Extract settings from the config
         self.num_features = self.config.num_features
         self.cat_features = self.config.cat_features
+        self.date_features = self.config.date_features
         self.target = self.config.target
         self.parameters = self.config.parameters
         self.catalog_name = self.config.catalog_name
@@ -62,9 +63,9 @@ class BasicModel:
         ).toPandas()
         self.data_version = "0"  # describe history -> retrieve
 
-        self.X_train = self.train_set[self.num_features + self.cat_features]
+        self.X_train = self.train_set[self.num_features + self.cat_features + self.date_features]
         self.y_train = self.train_set[self.target]
-        self.X_test = self.test_set[self.num_features + self.cat_features]
+        self.X_test = self.test_set[self.num_features + self.cat_features + self.date_features]
         self.y_test = self.test_set[self.target]
         logger.info("✅ Data successfully loaded.")
 

@@ -12,7 +12,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 
 from hotel_reservations.config import ProjectConfig, Tags
-from hotel_reservations.model import BasicModel
+from hotel_reservations.models.model import BasicModel
 
 mlflow.set_tracking_uri(TRACKING_URI)
 

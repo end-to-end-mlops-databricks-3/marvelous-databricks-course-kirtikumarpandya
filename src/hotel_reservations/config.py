@@ -20,6 +20,7 @@ class ProjectConfig(BaseModel):
     id_cols: list[str]
     date_features: list[str]
     experiment_name: str
+    experiment_name_fe: str
 
     @classmethod
     def from_yaml(cls, config_path: str | None = None, env: str = "dev") -> "ProjectConfig":

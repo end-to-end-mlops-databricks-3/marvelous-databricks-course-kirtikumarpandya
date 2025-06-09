@@ -12,7 +12,7 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 
 from hotel_reservations.config import ProjectConfig, Tags
-from hotel_reservations.model import BasicModel
+from hotel_reservations.models.model import BasicModel
 
 mlflow.set_tracking_uri(TRACKING_URI)
 
@@ -61,7 +61,9 @@ def test_load_data_validate_splits(mock_custom_model: BasicModel) -> None:
     mock_custom_model.load_data()
 
     # Verify feature/target splits
-    expected_features = mock_custom_model.num_features + mock_custom_model.cat_features
+    expected_features = (
+        mock_custom_model.num_features + mock_custom_model.cat_features + mock_custom_model.date_features
+    )
     pd.testing.assert_frame_equal(mock_custom_model.X_train, train_data[expected_features])
     pd.testing.assert_series_equal(mock_custom_model.y_train, train_data[mock_custom_model.target])
     pd.testing.assert_frame_equal(mock_custom_model.X_test, test_data[expected_features])

@@ -14,7 +14,7 @@ from pyspark.sql import SparkSession
 
 from hotel_reservations import PROJECT_DIR
 from hotel_reservations.config import ProjectConfig, Tags
-from hotel_reservations.model import BasicModel
+from hotel_reservations.models.model import BasicModel
 
 whl_file_name = None  # Global variable to store the .whl file name
 

@@ -9,9 +9,10 @@ dev:
   schema_name: 1potdish
 
 experiment_name: /Shared/sklearn-hotel-reservation
+experiment_name_fe: /Shared/sklearn-hotel-reservation-fe
 
 parameters:
-  learning_rate: [0.01, 0.05, 0.1, 0.2]
+  learning_rate: [0.01, 0.05, 0.1]
   n_estimators: [100, 500, 1000]
   max_depth: [3, 6, 10]
 

@@ -41,6 +41,7 @@ class BasicModel:
         # Extract settings from the config
         self.num_features = self.config.num_features
         self.cat_features = self.config.cat_features
+        self.date_features = self.config.date_features
         self.target = self.config.target
         self.parameters = self.config.parameters
         self.catalog_name = self.config.catalog_name
@@ -62,9 +63,9 @@ class BasicModel:
         ).toPandas()
         self.data_version = "0"  # describe history -> retrieve
 
-        self.X_train = self.train_set[self.num_features + self.cat_features]
+        self.X_train = self.train_set[self.num_features + self.cat_features + self.date_features]
         self.y_train = self.train_set[self.target]
-        self.X_test = self.test_set[self.num_features + self.cat_features]
+        self.X_test = self.test_set[self.num_features + self.cat_features + self.date_features]
         self.y_test = self.test_set[self.target]
         logger.info("✅ Data successfully loaded.")
 
@@ -109,22 +110,14 @@ class BasicModel:
                 # Create child run for each parameter combination
                 with mlflow.start_run(run_name=f"run_{i + 1}", nested=True) as child_run:
                     try:
-                        # Create pipeline with current parameters
-                        current_pipeline = Pipeline(
-                            [
-                                ("preprocessor", self.preprocessor),
-                                ("regressor", LGBMRegressor(random_state=42, verbose=-1)),
-                            ]
-                        )
-
                         # Set parameters
-                        current_pipeline.set_params(**params)
+                        self.pipeline.set_params(**params)
 
                         # Train model
-                        current_pipeline.fit(self.X_train, self.y_train)
+                        self.pipeline.fit(self.X_train, self.y_train)
 
                         # Make predictions
-                        y_pred = current_pipeline.predict(self.X_test)
+                        y_pred = self.pipeline.predict(self.X_test)
 
                         # Calculate metrics
                         mse = mean_squared_error(self.y_test, y_pred)
@@ -175,7 +168,7 @@ class BasicModel:
             )
             mlflow.log_input(dataset, context="training")
             mlflow.sklearn.log_model(
-                sk_model=current_pipeline, artifact_path="lightgbm-pipeline-model", signature=signature
+                sk_model=self.pipeline, artifact_path="lightgbm-pipeline-model", signature=signature
             )
 
     def register_model(self) -> None:

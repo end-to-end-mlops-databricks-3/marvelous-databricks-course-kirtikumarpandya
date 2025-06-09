@@ -6,7 +6,7 @@ from pyspark.dbutils import DBUtils
 from pyspark.sql import SparkSession
 
 from hotel_reservations.config import ProjectConfig, Tags
-from hotel_reservations.model import BasicModel
+from hotel_reservations.models.model import BasicModel
 
 # Configure tracking uri
 mlflow.set_tracking_uri("databricks")

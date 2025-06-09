@@ -61,7 +61,9 @@ def test_load_data_validate_splits(mock_custom_model: BasicModel) -> None:
     mock_custom_model.load_data()
 
     # Verify feature/target splits
-    expected_features = mock_custom_model.num_features + mock_custom_model.cat_features
+    expected_features = (
+        mock_custom_model.num_features + mock_custom_model.cat_features + mock_custom_model.date_features
+    )
     pd.testing.assert_frame_equal(mock_custom_model.X_train, train_data[expected_features])
     pd.testing.assert_series_equal(mock_custom_model.y_train, train_data[mock_custom_model.target])
     pd.testing.assert_frame_equal(mock_custom_model.X_test, test_data[expected_features])

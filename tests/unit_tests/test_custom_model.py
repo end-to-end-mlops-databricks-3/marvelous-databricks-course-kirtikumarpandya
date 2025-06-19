@@ -3,7 +3,7 @@
 import mlflow
 import pandas as pd
 from conftest import CATALOG_DIR, TRACKING_URI
-from lightgbm import LGBMRegressor
+from lightgbm import LGBMClassifier
 from loguru import logger
 from mlflow.entities.model_registry.registered_model import RegisteredModel
 from mlflow.tracking import MlflowClient
@@ -84,7 +84,7 @@ def test_prepare_features(mock_custom_model: BasicModel) -> None:
     assert isinstance(mock_custom_model.pipeline, Pipeline)
     assert isinstance(mock_custom_model.pipeline.steps, list)
     assert isinstance(mock_custom_model.pipeline.steps[0][1], ColumnTransformer)
-    assert isinstance(mock_custom_model.pipeline.steps[1][1], LGBMRegressor)
+    assert isinstance(mock_custom_model.pipeline.steps[1][1], LGBMClassifier)
 
 
 def test_train(mock_custom_model: BasicModel) -> None:

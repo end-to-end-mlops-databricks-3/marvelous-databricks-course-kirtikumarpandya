@@ -23,6 +23,7 @@ dependencies = [
     "ipykernel>=6.29.5",
     "pytest-cov>=6.1.1",
     "python-dotenv>=1.1.0",
+    "virtualenv>=20.31.2",
 ]
 
 dynamic = ['version']

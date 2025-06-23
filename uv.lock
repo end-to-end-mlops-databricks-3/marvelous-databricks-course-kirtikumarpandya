@@ -799,6 +799,7 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "scikit-learn" },
     { name = "scipy" },
+    { name = "virtualenv" },
     { name = "xgboost" },
 ]
 
@@ -867,6 +868,7 @@ requires-dist = [
     { name = "python-dotenv", specifier = ">=1.1.0" },
     { name = "scikit-learn", specifier = "==1.5.2" },
     { name = "scipy", specifier = "==1.14.1" },
+    { name = "virtualenv", specifier = ">=20.31.2" },
     { name = "xgboost", specifier = ">=3.0.0" },
 ]
 provides-extras = ["dev", "ci", "test"]

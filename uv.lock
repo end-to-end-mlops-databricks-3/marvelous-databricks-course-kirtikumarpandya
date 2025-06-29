@@ -788,7 +788,6 @@ dependencies = [
     { name = "ipykernel" },
     { name = "lightgbm" },
     { name = "loguru" },
-    { name = "marvelous" },
     { name = "matplotlib" },
     { name = "mlflow" },
     { name = "numpy" },
@@ -800,6 +799,7 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "scikit-learn" },
     { name = "scipy" },
+    { name = "virtualenv" },
     { name = "xgboost" },
 ]
 
@@ -814,12 +814,14 @@ ci = [
 dev = [
     { name = "databricks-connect" },
     { name = "ipykernel" },
+    { name = "marvelous" },
     { name = "pip" },
     { name = "pre-commit" },
     { name = "pytest" },
 ]
 test = [
     { name = "delta-spark" },
+    { name = "marvelous" },
     { name = "pre-commit" },
     { name = "pydantic-settings" },
     { name = "pyspark" },
@@ -842,7 +844,8 @@ requires-dist = [
     { name = "ipykernel", marker = "extra == 'dev'", specifier = ">=6.29.5,<7" },
     { name = "lightgbm", specifier = "==4.5.0" },
     { name = "loguru", specifier = "==0.7.3" },
-    { name = "marvelous", git = "https://github.com/end-to-end-mlops-databricks-3/marvelous?rev=0.1.0" },
+    { name = "marvelous", marker = "extra == 'dev'", git = "https://github.com/end-to-end-mlops-databricks-3/marvelous?rev=0.1.0" },
+    { name = "marvelous", marker = "extra == 'test'", git = "https://github.com/end-to-end-mlops-databricks-3/marvelous?rev=0.1.0" },
     { name = "matplotlib", specifier = "==3.9.2" },
     { name = "mlflow", specifier = "==2.17.0" },
     { name = "numpy", specifier = "==1.26.4" },
@@ -865,6 +868,7 @@ requires-dist = [
     { name = "python-dotenv", specifier = ">=1.1.0" },
     { name = "scikit-learn", specifier = "==1.5.2" },
     { name = "scipy", specifier = "==1.14.1" },
+    { name = "virtualenv", specifier = ">=20.31.2" },
     { name = "xgboost", specifier = ">=3.0.0" },
 ]
 provides-extras = ["dev", "ci", "test"]

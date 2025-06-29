@@ -7,14 +7,14 @@ It trains a model on a dataset, logs it with MLflow, and registers it in Unity C
 import mlflow
 import numpy as np
 import pandas as pd
-from lightgbm import LGBMRegressor
+from lightgbm import LGBMClassifier
 from loguru import logger
 from mlflow import MlflowClient
 from mlflow.data.dataset_source import DatasetSource
 from mlflow.models import infer_signature
 from pyspark.sql import SparkSession
 from sklearn.compose import ColumnTransformer
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.metrics import f1_score, mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import ParameterGrid
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
@@ -81,7 +81,7 @@ class BasicModel:
         )
 
         self.pipeline = Pipeline(
-            steps=[("preprocessor", self.preprocessor), ("regressor", LGBMRegressor(**self.parameters))]
+            steps=[("preprocessor", self.preprocessor), ("regressor", LGBMClassifier(**self.parameters))]
         )
         logger.info("✅ Preprocessing pipeline defined.")
 
@@ -100,6 +100,7 @@ class BasicModel:
         best_score = float("-inf")
         best_params = None
         best_run_id = None
+        best_f1 = float("-inf")
 
         param_combinations = list(ParameterGrid(pipeline_param_grid))
         logger.info(f"🚀 Starting hyperparameter tuning with {len(param_combinations)} combinations...")
@@ -123,6 +124,7 @@ class BasicModel:
                         mse = mean_squared_error(self.y_test, y_pred)
                         mae = mean_absolute_error(self.y_test, y_pred)
                         r2 = r2_score(self.y_test, y_pred)
+                        f1 = f1_score(self.y_test, y_pred, average="weighted")
 
                         # Log parameters (convert back to original format for clarity)
                         original_params = {k.replace("regressor__", ""): v for k, v in params.items()}
@@ -132,11 +134,13 @@ class BasicModel:
                         mlflow.log_metric("mse", mse)
                         mlflow.log_metric("mae", mae)
                         mlflow.log_metric("r2_score", r2)
+                        mlflow.log_metric("f1_score", f1)
 
                         logger.info(f"📊 Run {i + 1}/{len(param_combinations)} - R2: {r2:.4f}, MSE: {mse:.4f}")
 
                         # Track best model
                         if r2 > best_score:  # Using R2 as the metric to minimize
+                            best_f1 = f1
                             best_score = r2
                             best_params = original_params
                             best_run_id = child_run.info.run_id
@@ -147,17 +151,20 @@ class BasicModel:
 
             # Log best results in parent run
             mlflow.log_metric("best_r2_score", best_score)
+            mlflow.log_metric("best_f1_score", best_f1)
             mlflow.log_params({f"best_{k}": v for k, v in best_params.items()})
             mlflow.log_param("best_run_id", best_run_id)
 
             logger.info(f"✅ Best R2 Score: {best_score:.4f}")
             logger.info(f"📊 Best Parameters: {best_params}")
             logger.info(f"🎯 Best Run ID: {best_run_id}")
+            logger.info(f"📈 Best F1 Score: {best_f1:.4f}")
 
             # Store best model info for registration
             self.best_run_id = best_run_id
             self.best_params = best_params
             self.best_score = best_score
+            self.best_f1 = best_f1
 
             # Log model
             signature = infer_signature(model_input=self.X_train, model_output=y_pred)
@@ -232,3 +239,28 @@ class BasicModel:
 
         # Return predictions as a DataFrame
         return predictions
+
+    def model_improved(self) -> bool:
+        """Check if the model has improved based on the latest test data. It is based on f1 score.
+
+        :return: True if the model has improved, False otherwise.
+        """
+        logger.info("🔄 Checking if the model has improved...")
+
+        test_data = self.X_test
+
+        # Load the latest model
+        model_uri = f"models:/{self.model_name}@latest-model"
+        model = mlflow.sklearn.load_model(model_uri)
+
+        # Make predictions on the test data
+        predictions = model.predict(test_data)
+
+        # Calculate F1 score
+        f1 = f1_score(self.y_test, predictions, average="weighted")
+
+        # Compare with the best F1 score
+        has_improved = f1 > self.best_f1
+
+        logger.info(f"✅ Model improvement check completed. Improved: {has_improved}")
+        return has_improved

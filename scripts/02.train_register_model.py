@@ -6,7 +6,7 @@
 # import sys
 # from pathlib import Path
 # sys.path.append(str(Path.cwd().parent / "src"))
-from databricks.sdk.runtime import spark
+from databricks.sdk.runtime import dbutils, spark
 from loguru import logger
 from marvelous.common import create_parser
 
@@ -33,7 +33,9 @@ if is_test == 0:
     if model_improved:
         logger.info("Model has improved, registering the model.")
         model.register_model()
+        dbutils.jobs.taskValues.set(key="model_updated", value=1)
     else:
+        dbutils.jobs.taskValues.set(key="model_updated", value=0)
         logger.info("Model has not improved, skipping registration.")
 else:
     logger.info("Running in test mode, registering the model regardless of improvement status.")

@@ -59,7 +59,6 @@ model_serving.deploy_or_update_serving_endpoint()
 test_set = spark.table(f"{catalog_name}.{schema_name}.test_set_hotel_reservations").toPandas()
 
 # COMMAND ----------
-
 required_columns = config.cat_features + config.num_features + config.date_features
 sampled_records = test_set[required_columns].sample(n=100, replace=True).to_dict(orient="records")
 dataframe_records = [[record] for record in sampled_records]

@@ -2,7 +2,6 @@ import yaml
 from loguru import logger
 from marvelous.common import create_parser
 from marvelous.logging import setup_logging
-from marvelous.timer import Timer
 from pyspark.sql import SparkSession
 
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src/")))
@@ -33,11 +32,9 @@ df = spark.read.csv(
 ).toPandas()
 
 # Preprocess the data
-with Timer() as preprocess_timer:
-    data_processor = DataProcessor(df, config, spark)
-    data_processor.preprocess()
 
-logger.info(f"Data preprocessing: {preprocess_timer}")
+data_processor = DataProcessor(df, config, spark)
+data_processor.preprocess()
 
 # Split the data
 X_train, X_test = data_processor.split_data()

@@ -1,8 +1,3 @@
-# Databricks notebook source
-# % pip install -e ..
-# %restart_python
-# COMMAND ----------
-
 # import sys
 # from pathlib import Path
 # sys.path.append(str(Path.cwd().parent / "src"))
@@ -17,16 +12,16 @@ args = create_parser()
 root_path = args.root_path
 config_path = f"{root_path}/files/project_config.yml"
 config = ProjectConfig.from_yaml(config_path=config_path, env=args.env)
-# COMMAND ----------
+
 tags = Tags(git_sha=args.git_sha, branch=args.branch)
 model = BasicModel(config, tags, spark)
 logger.info("Model initialized with configuration: %s", config)
-# COMMAND ----------
+
 model.load_data()
 model.prepare_features()
 model.finetune_parameters()
 
-# COMMAND ----------
+
 is_test = args.is_test
 if is_test == 0:
     model_improved = model.model_improved()

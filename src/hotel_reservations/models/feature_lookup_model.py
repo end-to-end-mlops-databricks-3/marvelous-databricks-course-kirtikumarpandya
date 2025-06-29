@@ -287,7 +287,7 @@ class FeatureLookUpModel:
         Registers the model and sets alias to 'latest-model'.
         """
         registered_model = mlflow.register_model(
-            model_uri=f"runs:/{self.run_id}/lightgbm-pipeline-model-fe",
+            model_uri=f"runs:/{self.best_run_id}/lightgbm-pipeline-model-fe",
             name=f"{self.catalog_name}.{self.schema_name}.hotel_reservations_model_fe",
             tags=self.tags,
         )

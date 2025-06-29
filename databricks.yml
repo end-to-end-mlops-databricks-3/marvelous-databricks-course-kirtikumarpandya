@@ -154,7 +154,7 @@ resources:
 
 targets:
   dev:
-    cluster_id: 0514-140727-24llz5or #replace with your own!
+    cluster_id: 0510-190725-cy5y05ch #replace with your own!
     default: true
     mode: development
     workspace:

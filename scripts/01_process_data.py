@@ -1,3 +1,4 @@
+import pandas as pd
 import yaml
 from loguru import logger
 from marvelous.common import create_parser
@@ -24,16 +25,13 @@ logger.info(yaml.dump(config, default_flow_style=False))
 
 # Load the house prices dataset
 spark = SparkSession.builder.getOrCreate()
-df = spark.read.csv(
-    f"/Volumes/{config.catalog_name}/{config.schema_name}/managed_volume/Hotel_Reservations.csv",
-    sep=";",
-    header=True,
-    inferSchema=True,
-).toPandas()
+filepath = "../data/data.csv"
+
+# Load the data
+df = pd.read_csv(filepath)
 
 # Preprocess the data
-
-data_processor = DataProcessor(df, config, spark)
+data_processor = DataProcessor(pandas_df=df, config=config, spark=spark)
 data_processor.preprocess()
 
 # Split the data

@@ -1,22 +1,22 @@
-import os
-import sys
-from pathlib import Path
-
+import pandas as pd
 import yaml
 from loguru import logger
+from marvelous.common import create_parser
+from marvelous.logging import setup_logging
 from pyspark.sql import SparkSession
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src/")))
-
-from marvelous.logging import setup_logging
-from marvelous.timer import Timer
-
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src/")))
 from hotel_reservations.config import ProjectConfig
 from hotel_reservations.data_processor import DataProcessor
 
-config_path = Path.cwd() / "project_config.yml"
+args = create_parser()
+root_path = args.root_path
+config_path = f"{root_path}/files/project_config.yml"
+config = ProjectConfig.from_yaml(config_path=config_path, env=args.env)
+is_test = args.is_test
 
-config = ProjectConfig.from_yaml(config_path=config_path, env="dev")
+# config_path = Path.cwd() / "project_config.yml"
+# config = ProjectConfig.from_yaml(config_path=config_path, env="dev")
 
 setup_logging(log_file=f"/Volumes/{config.catalog_name}/{config.schema_name}/logs/hotel_reservations-1.log")
 
@@ -25,19 +25,14 @@ logger.info(yaml.dump(config, default_flow_style=False))
 
 # Load the house prices dataset
 spark = SparkSession.builder.getOrCreate()
-df = spark.read.csv(
-    f"/Volumes/{config.catalog_name}/{config.schema_name}/managed_volume/Hotel_Reservations.csv",
-    sep=";",
-    header=True,
-    inferSchema=True,
-).toPandas()
+filepath = "../data/data.csv"
+
+# Load the data
+df = pd.read_csv(filepath)
 
 # Preprocess the data
-with Timer() as preprocess_timer:
-    data_processor = DataProcessor(df, config, spark)
-    data_processor.preprocess()
-
-logger.info(f"Data preprocessing: {preprocess_timer}")
+data_processor = DataProcessor(pandas_df=df, config=config, spark=spark)
+data_processor.preprocess()
 
 # Split the data
 X_train, X_test = data_processor.split_data()

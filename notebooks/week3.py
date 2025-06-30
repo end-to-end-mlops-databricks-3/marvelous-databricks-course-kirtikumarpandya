@@ -30,7 +30,7 @@ from hotel_reservations.models.feature_lookup_model import FeatureLookUpModel
 # COMMAND ----------
 
 spark = SparkSession.builder.getOrCreate()
-tags_dict = {"git_sha": "abcd12345", "branch": "week2"}
+tags_dict = {"git_sha": "abcd12345", "branch": "feat/week3"}
 tags = Tags(**tags_dict)
 
 config = ProjectConfig.from_yaml(config_path="../project_config.yml")
